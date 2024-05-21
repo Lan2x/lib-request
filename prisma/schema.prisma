@@ -1,0 +1,130 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Tbl_user {
+  id                 Int      @id @default(autoincrement())
+  first_name         String
+  middle_name        String
+  last_name          String
+  email              String   @unique
+  password           String
+  course             String?
+  birthdate          String
+  college_department String
+  gender             String
+  role               String
+  image              String
+  status             Boolean  @default(false)
+  created_at         DateTime @default(now())
+
+  UserType  Tbl_user_type @relation(fields: [user_type], references: [id])
+  user_type Int
+
+  College Tbl_college @relation(fields: [college], references: [id])
+  college Int
+
+  Request    Request[]
+  BorrowBook BorrowBook[]
+}
+
+model Tbl_user_type {
+  id         Int        @id @default(autoincrement())
+  user_type  String
+  created_at DateTime   @default(now())
+  User       Tbl_user[]
+}
+
+model Request {
+  id             Int      @id @default(autoincrement())
+  book_name      String
+  author         String
+  copyright_date String
+  unit_cost      String
+  total_cost     String
+  quantity       String
+  date_requested DateTime @default(now())
+  userId         Int
+
+  user  Tbl_user @relation(fields: [userId], references: [id])
+  Stage Stage[]
+}
+
+model Stage {
+  id         Int      @id @default(autoincrement())
+  stage      String
+  remarks    String
+  created_at DateTime @default(now())
+  requestId  Int
+
+  request Request @relation(fields: [requestId], references: [id])
+}
+
+model Tbl_collection {
+  id               Int           @id @default(autoincrement())
+  title            String
+  author           String
+  signage          Int?
+  isbn             String
+  publisher        String
+  publication_date String
+  edition          String?
+  price            String
+  accession_num    String?
+  call_number      String?
+  quantity         String
+  location         Int?
+  availability     Boolean       @default(false)
+  created_at       DateTime      @default(now())
+  Location         Tbl_location? @relation(fields: [location], references: [id])
+  Tbl_signage      Tbl_signage?  @relation(fields: [signage], references: [id])
+  BorrowBook       BorrowBook[]
+}
+
+model Tbl_signage {
+  id         Int              @id @default(autoincrement())
+  signage    String
+  created_at DateTime         @default(now())
+  Book       Tbl_collection[]
+}
+
+model Tbl_location {
+  id         Int              @id @default(autoincrement())
+  location   String
+  created_at DateTime         @default(now())
+  Book       Tbl_collection[]
+}
+
+model Tbl_college {
+  id         Int        @id @default(autoincrement())
+  college    String
+  created_at DateTime   @default(now())
+  Tbl_user   Tbl_user[]
+}
+
+//circulation
+model BorrowBook {
+  id              Int       @id @default(autoincrement())
+  dateReserveTime DateTime  @map("date_reserve_time")
+  dateBorrowed    DateTime  @map("date_borrowed")
+  dueDate         DateTime? @map("due_date")
+  dateReturned    DateTime? @map("date_returned")
+  status          String    @db.VarChar(20)
+  fines           Decimal   @db.Decimal(10, 2)
+
+  User   Tbl_user @relation(fields: [userId], references: [id])
+  userId Int
+
+  Book   Tbl_collection @relation(fields: [bookId], references: [id])
+  bookId Int
+
+  @@map("borrowbook")
+}
