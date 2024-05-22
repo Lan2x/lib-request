@@ -108,6 +108,8 @@ model Tbl_college {
   college    String
   created_at DateTime   @default(now())
   Tbl_user   Tbl_user[]
+
+  @@map("tbl_college")
 }
 
 //circulation
